@@ -100,6 +100,27 @@
         .btn-game { background-color: var(--blue); }
         .btn-portfolio { background-color: var(--yellow); }
 
+        #game-mode-picker {
+            display: none;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0 24px;
+        }
+        .game-mode-card {
+            background: white;
+            border: 2px solid #bedeff;
+            border-radius: 16px;
+            padding: 24px 18px;
+            width: min(280px, 100%);
+            cursor: pointer;
+            box-shadow: 0 4px 0 #bedeff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .game-mode-card:hover { transform: translateY(-2px); }
+        .game-mode-card h3 { margin: 10px 0 8px; font-size: 1.2rem; }
+        .game-mode-card p { margin: 0; color: #666; line-height: 1.45; }
+
         /* 2. 미니게임 화면 (팩맨 스타일 미로찾기) */
         #game-view {
             display: none;
@@ -115,13 +136,17 @@
             margin-bottom: 20px;
         }
         #game-instruction { font-size: 1.15rem; font-weight: bold; margin: 5px 0; }
-        #game-stats { display: flex; justify-content: space-around; font-size: 1.1rem; font-weight: bold; margin-top: 8px; }
+        #game-stats { display: none; justify-content: space-around; font-size: 1.1rem; font-weight: bold; margin-top: 8px; }
         #new-record-banner {
             display: none; font-size: 3rem; color: red; font-weight: bold;
             animation: blink 0.5s infinite alternate; margin-bottom: 15px;
         }
         @keyframes blink { from { opacity: 1; } to { opacity: 0; } }
 
+        #maze-game-area,
+        #puzzle-game-area {
+            display: none;
+        }
         #maze-wrapper {
             display: flex;
             justify-content: center;
@@ -134,6 +159,74 @@
             border: 4px solid #bedeff;
             border-radius: 10px;
             box-shadow: 0 4px 0 #bedeff;
+        }
+        .puzzle-stage {
+            position: relative;
+            margin: 0 auto 16px;
+            overflow: visible;
+            touch-action: none;
+        }
+        #puzzle-board {
+            position: absolute;
+            border: 4px solid #bedeff;
+            border-radius: 0px;
+            box-shadow: 0 4px 0 #bedeff;
+            isolation:isolate;
+            background:
+            
+    linear-gradient(
+        135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 35%, rgba(250,244,228,0.25) 100%
+    );
+            background-color: rgba(255,255,255,0.18);
+            backdrop-filter: blur(2px);
+            overflow: hidden;
+            z-index: 1;
+        }
+        #puzzle-board::after{
+            content:"";
+            position:absolute;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+            background:white;
+            opacity:.55;
+            pointer-events:none;
+        }
+        .puzzle-slot {
+            position: absolute;
+            box-sizing: border-box;
+            border: 2px dashed rgba(0,0,0,0.18);
+            background: rgba(255,255,255,0.12);
+            pointer-events: none;
+        }
+        .puzzle-piece {
+            position: absolute;
+            box-sizing: border-box;
+            border: 2px solid rgba(255,255,255,0.95);
+            border-radius: 0;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.22);
+            background-origin: border-box;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            z-index: 3;
+        }
+        .puzzle-piece:active { cursor: grabbing; }
+        .puzzle-piece.placed {
+            cursor: default;
+            box-shadow: 0 0 0 2px #7ecbff inset;
+        }
+        #puzzle-complete-panel {
+            display: none;
+            margin: 18px auto 0;
+            max-width: 680px;
+            background: white;
+            border: 2px solid #bedeff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 0 #bedeff;
+            line-height: 1.6;
         }
         .cell-wall {
             background-color: #2233b0;
@@ -311,15 +404,15 @@
         
         <div id="mode-selection">
             <h1 class="mode-title">
-                <span class="lang-ko">안녕하세요, 이나은입니다 👋</span>
-                <span class="lang-en">Hello, I'm Naeun Lee 👋</span>
+                <span class="lang-ko">안녕하세요, 이나은입니다 </span>
+                <span class="lang-en">Hello, I'm Naeun Lee </span>
             </h1>
             <p class="mode-subtitle">
                 <span class="lang-ko">원하시는 소개 형식을 선택해주세요.</span>
                 <span class="lang-en">Please select the portfolio introduction mode.</span>
             </p>
             <div class="btn btn-game" onclick="startGameMode()">
-                <span class="lang-ko">게임모드 🎮</span><span class="lang-en">Game Mode 🎮</span>
+                <span class="lang-ko">미니게임 🎮</span><span class="lang-en">Game Mode 🎮</span>
             </div>
             <div class="btn btn-portfolio" onclick="showPortfolioMode()">
                 <span class="lang-ko">포트폴리오 바로가기 📄</span><span class="lang-en">Go straight to Portfolio 📄</span>
@@ -329,7 +422,7 @@
         <div id="game-view">
             <div id="new-record-banner">New Record!!</div>
             <div id="game-header">
-                <div id="game-instruction">
+                <div id="game-instruction" style="display:none;">
                     <span class="lang-ko">방향키(⬆️⬇️⬅️➡️) 또는 아래 버튼으로 미로를 탈출하세요!<br><span style="font-size:0.95rem; color:#666;">(체리 🍒를 먹으면 시간이 2초 추가됩니다!)</span></span>
                     <span class="lang-en">Use the arrow keys or buttons below to escape the maze!<br><span style="font-size:0.95rem; color:#666;">(Eating a cherry 🍒 adds 2 seconds!)</span></span>
                 </div>
@@ -339,33 +432,66 @@
                 </div>
             </div>
 
-            <div id="maze-wrapper">
-                <div id="maze-grid"></div>
-            </div>
-
-            <div id="dpad">
-                <div id="dpad-grid">
-                    <div class="dpad-empty"></div>
-                    <button class="dpad-btn" onclick="movePlayer(0,-1)">⬆️</button>
-                    <div class="dpad-empty"></div>
-                    <button class="dpad-btn" onclick="movePlayer(-1,0)">⬅️</button>
-                    <div class="dpad-empty"></div>
-                    <button class="dpad-btn" onclick="movePlayer(1,0)">➡️</button>
-                    <div class="dpad-empty"></div>
-                    <button class="dpad-btn" onclick="movePlayer(0,1)">⬇️</button>
-                    <div class="dpad-empty"></div>
+            <div id="game-mode-picker">
+                <div class="game-mode-card" onclick="startMazeGame()">
+                    <div style="font-size:2rem;">🧭</div>
+                    <h3>미로찾기</h3>
+                    <p>기존처럼 미로를 탈출해 보세요.</p>
+                </div>
+                <div class="game-mode-card" onclick="startPuzzleGame()">
+                    <div style="font-size:2rem;">🧩</div>
+                    <h3>퍼즐</h3>
+                    <p>랜덤한 사진 조각을 맞춰 완성해 보세요.</p>
                 </div>
             </div>
 
-            <div id="game-result-panel">
-                <h3 style="margin-top:0;" class="lang-ko">🎉 탈출 성공!</h3>
-                <h3 style="margin-top:0;" class="lang-en">🎉 You Escaped!</h3>
-                <p style="font-size:1.2rem;"><span class="lang-ko">Score: </span><span class="lang-en">Score: </span><span id="final-score" style="font-weight:bold; color:blue;">0</span>s</p>
-                <p style="font-size:1.1rem;"><span class="lang-ko">현재 순위: </span><span class="lang-en">Current Rank: </span><span id="final-rank" style="font-weight:bold; color:red;">-</span></p>
-                <button class="result-portfolio-btn" onclick="showPortfolioMode()">
-                    <span class="lang-ko">🐢 포트폴리오 보러가기</span>
-                    <span class="lang-en">🐢 View Portfolio</span>
-                </button>
+            <div id="maze-game-area">
+                <div id="maze-wrapper">
+                    <div id="maze-grid"></div>
+                </div>
+
+                <div id="dpad">
+                    <div id="dpad-grid">
+                        <div class="dpad-empty"></div>
+                        <button class="dpad-btn" onclick="movePlayer(0,-1)">⬆️</button>
+                        <div class="dpad-empty"></div>
+                        <button class="dpad-btn" onclick="movePlayer(-1,0)">⬅️</button>
+                        <div class="dpad-empty"></div>
+                        <button class="dpad-btn" onclick="movePlayer(1,0)">➡️</button>
+                        <div class="dpad-empty"></div>
+                        <button class="dpad-btn" onclick="movePlayer(0,1)">⬇️</button>
+                        <div class="dpad-empty"></div>
+                    </div>
+                </div>
+
+                <div id="game-result-panel">
+                    <h3 style="margin-top:0;" class="lang-ko">🎉 탈출 성공!</h3>
+                    <h3 style="margin-top:0;" class="lang-en">🎉 You Escaped!</h3>
+                    <p style="font-size:1.2rem;"><span class="lang-ko">Score: </span><span class="lang-en">Score: </span><span id="final-score" style="font-weight:bold; color:blue;">0</span>s</p>
+                    <p style="font-size:1.1rem;"><span class="lang-ko">현재 순위: </span><span class="lang-en">Current Rank: </span><span id="final-rank" style="font-weight:bold; color:red;">-</span></p>
+                    <button class="result-portfolio-btn" onclick="showPortfolioMode()">
+                        <span class="lang-ko">🐢 포트폴리오 보러가기</span>
+                        <span class="lang-en">🐢 View Portfolio</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="puzzle-game-area">
+                <div id="game-header">
+                    <div id="game-instruction">
+                        <span class="lang-ko">사진 조각을 맞춰서 퍼즐을 완성해 보세요.</span>
+                        <span class="lang-en">Complete the puzzle by matching the pieces.</span>
+                    </div>
+                </div>
+                <div id="puzzle-board"></div>
+                <div id="puzzle-complete-panel">
+                    <h3 style="margin-top:0;">🎉 퍼즐 완성!</h3>
+                    <p id="puzzle-complete-desc" style="font-size:1.05rem; line-height:1.7;"></p>
+                    <button class="result-portfolio-btn" onclick="showPortfolioMode()">
+                        <span class="lang-ko">포트폴리오 바로가기</span>
+                        <span class="lang-en">Go to Portfolio</span>
+                    </button>
+                </div>
             </div>
 
             <div id="game-back-home">
@@ -444,16 +570,16 @@
                         <div>Process Modeling Engineer</div>
                         <div class="exp-period">Jan 2024 - Present</div>
                     </div>
-                    <div class="exp-company">CJ CheilJedang BIO <span style="font-weight:normal; color:#666; font-size:0.9rem;">(Suwon, South Korea)</span></div>
+                    <div class="exp-company">CJ CheilJedang <span style="font-weight:normal; color:#666; font-size:0.9rem;">(Suwon, South Korea)</span></div>
                     
                     <div class="lang-ko">
-                        <div class="exp-bullet">컴퓨터 비전(이미지 데이터)과 고차원 정형 데이터(Tabular)의 특징을 결합하여 연속형 타겟 변수를 예측하는 엔드투엔드 멀티모달 딥러닝 모델($R^2=0.93$)을 개발하여 품질 관리를 획기적으로 자동화함.</div>
+                        <div class="exp-bullet">컴퓨터 비전(이미지 데이터)과 고차원 정형 데이터(Tabular)의 특징을 결합하여 연속형 타겟 변수를 예측하는 엔드투엔드 멀티모달 딥러닝 모델(R-squared > 0.9)을 개발하여 품질 관리를 획기적으로 자동화함.</div>
                         <div class="exp-bullet">전 세계 글로벌 공장에 걸친 과거 공정 데이터를 수집 및 통합하는 자동화 데이터 파이프라인을 구축하여 전사적 디지털 전환(Digital Transformation)을 주도함.</div>
                         <div class="exp-bullet">실시간 스트리밍 멀티변량 데이터를 처리하는 실시간 이상감지 프레임워크 및 제약 기반 최적화 도구를 개발하여 시스템 다운타임을 줄이고 운영 수율을 극대화함.</div>
                         <div class="exp-bullet">복잡한 수치 시뮬레이션과 워크플로우를 자동화하는 객체지향 Python 플랫폼을 설계하여 수동 데이터 입력 오류를 완벽하게 제거하고 부서 간 팀 생산성을 가속화함.</div>
                     </div>
                     <div class="lang-en">
-                        <div class="exp-bullet">Developed an end-to-end multi-modal deep learning model ($R^2=0.93$) combining computer vision (image data) and high-dimensional tabular features to predict continuous target variables, significantly automating quality control.</div>
+                        <div class="exp-bullet">Developed an end-to-end multi-modal deep learning model (R-squared > 0.9) combining computer vision (image data) and high-dimensional tabular features to predict continuous target variables, significantly automating quality control.</div>
                         <div class="exp-bullet">Engineered an automated data pipeline to aggregate historical process data across global plants, driving company-wide digital transformation.</div>
                         <div class="exp-bullet">Engineered a real-time anomaly detection framework and constraint-based optimization tools for live streaming multivariate data, reducing system downtime and maximizing operational yield.</div>
                         <div class="exp-bullet">Architected an object-oriented Python platform to automate complex numerical simulations and workflows, eliminating manual data entry errors and accelerating cross-functional team productivity.</div>
@@ -497,7 +623,7 @@
                         <div class="exp-period">Personal Project</div>
                     </div>
                     <div class="lang-ko">
-                        <div class="exp-bullet">AWS(EC2, Lambda, CloudWatch) 기반 인프라 위에 Binance API를 탑재하여, 24시간 가동하는 암호화폐 자동 매수/매도 선물 거래 파이프라인 완비.</div>
+                        <div class="exp-bullet">AWS(EC2, Lambda, CloudWatch) 기반 인프라 위에 Binance API를 탑재하여, 24시간 가동하는 암호화폐 자동 매수/매도 선물 거래 파이프라인 구축.</div>
                     </div>
                     <div class="lang-en">
                         <div class="exp-bullet">Constructed 24/7 serverless cloud workflows on AWS integrated with crypto exchange APIs to execute conditional backtested trading strategies.</div>
@@ -630,18 +756,54 @@
             document.getElementById('mode-selection').style.display = 'block';
             clearInterval(timerInterval);
             mazeActive = false;
+            document.getElementById('game-mode-picker').style.display = 'none';
+            document.getElementById('maze-game-area').style.display = 'none';
+            document.getElementById('puzzle-game-area').style.display = 'none';
+            document.getElementById('puzzle-complete-panel').style.display = 'none';
+            document.getElementById('game-result-panel').style.display = 'none';
         }
 
         function startGameMode() {
             document.getElementById('mode-selection').style.display = 'none';
             document.getElementById('game-view').style.display = 'block';
+            document.getElementById('game-mode-picker').style.display = 'flex';
+            document.getElementById('game-header').style.display = 'none';
+            document.getElementById('maze-game-area').style.display = 'none';
+            document.getElementById('puzzle-game-area').style.display = 'none';
+            document.getElementById('puzzle-complete-panel').style.display = 'none';
+            document.getElementById('game-result-panel').style.display = 'none';
+        }
+
+        function startMazeGame() {
+            document.getElementById('game-mode-picker').style.display = 'none';
+            document.getElementById('maze-game-area').style.display = 'block';
+            document.getElementById('game-header').style.display = 'block';
+            document.getElementById('puzzle-game-area').style.display = 'none';
+            document.getElementById('game-instruction').style.display = 'block';
+            document.getElementById('game-stats').style.display = 'flex';
             resetGame();
             runGame();
+        }
+
+        function startPuzzleGame() {
+            document.getElementById('game-mode-picker').style.display = 'none';
+            document.getElementById('maze-game-area').style.display = 'none';
+            document.getElementById('game-header').style.display = 'none';
+            document.getElementById('puzzle-game-area').style.display = 'block';
+            document.getElementById('game-instruction').style.display = 'none';
+            document.getElementById('game-stats').style.display = 'none';
+            startPuzzleGameFlow();
         }
 
         function showPortfolioMode() {
             document.getElementById('mode-selection').style.display = 'none';
             document.getElementById('game-view').style.display = 'none';
+            document.getElementById('game-mode-picker').style.display = 'none';
+            document.getElementById('maze-game-area').style.display = 'none';
+            document.getElementById('puzzle-game-area').style.display = 'none';
+            document.getElementById('puzzle-complete-panel').style.display = 'none';
+            document.getElementById('game-instruction').style.display = 'none';
+            document.getElementById('game-stats').style.display = 'none';
             document.getElementById('portfolio-view').style.display = 'block';
             switchTab('intro'); // 포트폴리오 진입 시 첫 탭 강제 오픈
         }
@@ -657,6 +819,231 @@
             // 탭 변경 시 위쪽으로 부드럽게 스크롤 자동 보정
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        const puzzleImageMap = {
+            img1: { src: 'imgs/img1.jpg', desc: '2018년 7월 프라하 여행에서' },
+            img2: { src: 'imgs/img2.jpg', desc: '2022년 UNL 풋볼 경기를' },
+            img3: { src: 'imgs/img3.jpg', desc: '2023년 10월 뉴욕 여행에서' },
+            img4: { src: 'imgs/img4.jpg', desc: '2024년 부산 출장 중' }
+        };
+
+        let puzzleState = {
+            imageKey: null,
+            pieces: [],
+            activeDrag: null,
+            boardEl: null,
+            stageEl: null
+        };
+
+        function startPuzzleGameFlow() {
+            const imageKeys = Object.keys(puzzleImageMap);
+            const imageKey = imageKeys[Math.floor(Math.random() * imageKeys.length)];
+            const imageInfo = puzzleImageMap[imageKey];
+            puzzleState.imageKey = imageKey;
+            document.getElementById('puzzle-complete-panel').style.display = 'none';
+            const img = new Image();
+            img.onload = () => buildPuzzleBoard(img, imageInfo.src, imageKey);
+            img.src = imageInfo.src;
+        }
+
+        function buildPuzzleBoard(img, src, imageKey) {
+            const puzzleArea = document.getElementById('puzzle-game-area');
+            const boardEl = document.getElementById('puzzle-board');
+            let stageEl = puzzleArea.querySelector('.puzzle-stage');
+            if (!stageEl) {
+                stageEl = document.createElement('div');
+                stageEl.className = 'puzzle-stage';
+                puzzleArea.insertBefore(stageEl, boardEl);
+            }
+            stageEl.innerHTML = "";
+            boardEl.innerHTML = '';
+            boardEl.style.left = '0px';
+            boardEl.style.top = '0px';
+            stageEl.appendChild(boardEl);
+
+            const maxWidth = Math.min(window.innerWidth * 0.72, 760);
+            const maxHeight = Math.min(window.innerHeight * 0.52, 720);
+            const scale = Math.min(maxWidth / img.naturalWidth, maxHeight / img.naturalHeight, 1);
+            const boardW = Math.max(280, Math.round(img.naturalWidth * scale));
+            const boardH = Math.max(280, Math.round(img.naturalHeight * scale));
+            const pieceW = Math.floor(boardW / 5);
+            const pieceH = Math.floor(boardH / 5);
+            const sideMargin = 30;
+            const sideAreaW = Math.max(260, Math.floor((window.innerWidth - boardW - sideMargin * 2) / 2));
+            const sideAreaH = Math.max(260, Math.floor(boardH * 1.2));
+            const stageW = Math.max(boardW + sideAreaW * 2 + 180, 900);
+            const stageH = Math.max(boardH + 80, sideAreaH + 60);
+            const boardLeft = Math.floor((stageW - boardW) / 2);
+            const boardTop = 30;
+
+            stageEl.style.width = stageW + 'px';
+            stageEl.style.height = stageH + 'px';
+            boardEl.style.width = boardW + 'px';
+            boardEl.style.height = boardH + 'px';
+            boardEl.style.left = boardLeft + 'px';
+            boardEl.style.top = boardTop + 'px';
+            boardEl.style.backgroundImage = `url(${src})`;
+            boardEl.style.backgroundSize = `${boardW}px ${boardH}px`;
+            boardEl.style.backgroundRepeat = 'no-repeat';
+            boardEl.style.backgroundPosition = 'center';
+            boardEl.style.position = 'absolute';
+
+            const slots = [];
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'puzzle-slot';
+                    slot.style.width = pieceW + 'px';
+                    slot.style.height = pieceH + 'px';
+                    slot.style.left = (col * pieceW) + 'px';
+                    slot.style.top = (row * pieceH) + 'px';
+                    slot.dataset.row = row;
+                    slot.dataset.col = col;
+                    slot.dataset.occupied = 'false';
+                    boardEl.appendChild(slot);
+                    slots.push(slot);
+                }
+            }
+
+            function overlapsSlots(left, top, width, height) {
+                return slots.some(slot => {
+                    const slotLeft = Number(slot.style.left.replace('px', ''));
+                    const slotTop = Number(slot.style.top.replace('px', ''));
+                    const slotWidth = Number(slot.style.width.replace('px', ''));
+                    const slotHeight = Number(slot.style.height.replace('px', ''));
+                    return left < slotLeft + slotWidth && left + width > slotLeft && top < slotTop + slotHeight && top + height > slotTop;
+                });
+            }
+
+            const pieces = [];
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const piece = document.createElement('div');
+                    piece.className = 'puzzle-piece';
+                    piece.style.width = pieceW + 'px';
+                    piece.style.height = pieceH + 'px';
+                    piece.style.backgroundImage = `url(${src})`;
+                    piece.style.backgroundSize = `${boardW}px ${boardH}px`;
+                    piece.style.backgroundRepeat = 'no-repeat';
+                    piece.style.backgroundPosition = `${-(col * pieceW)}px ${-(row * pieceH)}px`;
+                    piece.dataset.targetRow = row;
+                    piece.dataset.targetCol = col;
+                    piece.dataset.placed = 'false';
+
+                    const isLeftSide = (row + col) % 2 === 0;
+                    const homeLeft = isLeftSide
+                        ? Math.max(18, Math.min(sideAreaW - pieceW - 18, 18 + Math.random() * Math.max(10, sideAreaW - pieceW - 36)))
+                        : Math.max(stageW - sideAreaW - pieceW - 18, Math.min(stageW - pieceW - 18, stageW - sideAreaW - pieceW - 18 + Math.random() * Math.max(10, sideAreaW - pieceW - 36)));
+                    const homeTop = 20 + Math.random() * Math.max(10, stageH - pieceH - 40);
+
+                    piece.style.margin = '0';
+                    piece.style.backgroundClip = 'padding-box';
+
+                    piece.style.left = homeLeft + 'px';
+                    piece.style.top = homeTop + 'px';
+                    piece.dataset.homeLeft = homeLeft;
+                    piece.dataset.homeTop = homeTop;
+                    piece.addEventListener('pointerdown', handlePuzzlePointerDown);
+                    piece.addEventListener('pointermove', handlePuzzlePointerMove);
+                    piece.addEventListener('pointerup', handlePuzzlePointerUp);
+                    piece.addEventListener('pointercancel', handlePuzzlePointerUp);
+                    stageEl.appendChild(piece);
+                    pieces.push({ el: piece, targetRow: row, targetCol: col, placed: false });
+                }
+            }
+
+            puzzleState = { imageKey, pieces, activeDrag: null, boardEl, stageEl };
+            document.getElementById('puzzle-complete-panel').style.display = 'none';
+        }
+
+        function handlePuzzlePointerDown(e) {
+            const pieceEl = e.currentTarget;
+            if (pieceEl.dataset.placed === 'true') return;
+            e.preventDefault();
+            puzzleState.activeDrag = {
+                pieceEl,
+                pointerId: e.pointerId,
+                startX: e.clientX,
+                startY: e.clientY,
+                originLeft: Number(pieceEl.style.left.replace('px', '')),
+                originTop: Number(pieceEl.style.top.replace('px', ''))
+            };
+            pieceEl.setPointerCapture(e.pointerId);
+            pieceEl.style.zIndex = '10';
+            pieceEl.style.cursor = 'grabbing';
+        }
+
+        function handlePuzzlePointerMove(e) {
+            if (!puzzleState.activeDrag) return;
+            const drag = puzzleState.activeDrag;
+            const dx = e.clientX - drag.startX;
+            const dy = e.clientY - drag.startY;
+            let left = drag.originLeft + dx;
+            let top = drag.originTop + dy;
+            const maxLeft = puzzleState.stageEl.clientWidth - drag.pieceEl.offsetWidth;
+            const maxTop = puzzleState.stageEl.clientHeight - drag.pieceEl.offsetHeight;
+            left = Math.min(Math.max(left, 0), maxLeft);
+            top = Math.min(Math.max(top, 0), maxTop);
+            drag.pieceEl.style.left = left + 'px';
+            drag.pieceEl.style.top = top + 'px';
+        }
+
+        function handlePuzzlePointerUp(e) {
+            if (!puzzleState.activeDrag) return;
+            const drag = puzzleState.activeDrag;
+            const pieceEl = drag.pieceEl;
+            const pieceRect = pieceEl.getBoundingClientRect();
+            const boardRect = puzzleState.boardEl.getBoundingClientRect();
+            let snapped = false;
+
+            Array.from(puzzleState.boardEl.querySelectorAll('.puzzle-slot')).forEach(slot => {
+                if (snapped || slot.dataset.occupied === 'true') return;
+                const slotRect = slot.getBoundingClientRect();
+                const overlapX = Math.max(0, Math.min(pieceRect.right, slotRect.right) - Math.max(pieceRect.left, slotRect.left));
+                const overlapY = Math.max(0, Math.min(pieceRect.bottom, slotRect.bottom) - Math.max(pieceRect.top, slotRect.top));
+                const overlapArea = overlapX * overlapY;
+                const pieceArea = pieceRect.width * pieceRect.height;
+                const overlapRatio = pieceArea ? (overlapArea / pieceArea) : 0;
+                const targetRow = Number(pieceEl.dataset.targetRow);
+                const targetCol = Number(pieceEl.dataset.targetCol);
+                const slotRow = Number(slot.dataset.row);
+                const slotCol = Number(slot.dataset.col);
+
+                if (overlapRatio >= 0.7 && targetRow === slotRow && targetCol === slotCol) {
+                    pieceEl.style.left = (puzzleState.boardEl.offsetLeft + slot.offsetLeft) + 'px';
+                    pieceEl.style.top = (puzzleState.boardEl.offsetTop + slot.offsetTop) + 'px';
+                    pieceEl.dataset.placed = 'true';
+                    pieceEl.classList.add('placed');
+                    pieceEl.style.cursor = 'default';
+                    slot.dataset.occupied = 'true';
+                    const matchedPiece = puzzleState.pieces.find(p => p.el === pieceEl);
+                    if (matchedPiece) matchedPiece.placed = true;
+                    snapped = true;
+                }
+            });
+
+            if (!snapped) {
+                pieceEl.style.left = pieceEl.dataset.homeLeft + 'px';
+                pieceEl.style.top = pieceEl.dataset.homeTop + 'px';
+            }
+
+            pieceEl.style.zIndex = '3';
+            pieceEl.style.cursor = 'grab';
+            puzzleState.activeDrag = null;
+            checkPuzzleComplete();
+        }
+
+        function checkPuzzleComplete() {
+            if (puzzleState.pieces.length && puzzleState.pieces.every(piece => piece.placed)) {
+                const completePanel = document.getElementById('puzzle-complete-panel');
+                const message = document.getElementById('puzzle-complete-desc');
+                const imageInfo = puzzleImageMap[puzzleState.imageKey];
+                message.innerText = `축하합니다! 이 사진은 ${imageInfo.desc} 촬영한 사진입니다. 저에 대해 더 알고 싶으시다면 아래의 포트폴리오로 이동해 주세요.`;
+                completePanel.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('pointerup', handlePuzzlePointerUp);
 
         // ============================================================
         // --- 팩맨 스타일 미로찾기 게임 엔진 ---
