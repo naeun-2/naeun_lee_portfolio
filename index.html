@@ -252,6 +252,7 @@
         }
         .puzzle-stage {
             position: relative;
+            width: 100%;
             margin: 0 auto 16px;
             overflow: visible;
             touch-action: none;
@@ -1209,20 +1210,20 @@
             boardEl.style.top = '0px';
             stageEl.appendChild(boardEl);
 
-            const maxWidth = Math.min(window.innerWidth * 0.72, 760);
-            const maxHeight = Math.min(window.innerHeight * 0.52, 720);
+            const containerW = Math.max(puzzleArea.clientWidth || 0, 320);
+            const maxWidth = Math.min(containerW * 0.86, 640);
+            const maxHeight = Math.min(window.innerHeight * 0.45, 560);
             const scale = Math.min(maxWidth / img.naturalWidth, maxHeight / img.naturalHeight, 1);
-            const boardW = Math.max(280, Math.round(img.naturalWidth * scale));
-            const boardH = Math.max(280, Math.round(img.naturalHeight * scale));
+            const boardW = Math.max(260, Math.round(img.naturalWidth * scale));
+            const boardH = Math.max(260, Math.round(img.naturalHeight * scale));
             const pieceW = Math.floor(boardW / 5);
             const pieceH = Math.floor(boardH / 5);
-            const sideMargin = 30;
-            const sideAreaW = Math.max(260, Math.floor((window.innerWidth - boardW - sideMargin * 2) / 2));
-            const sideAreaH = Math.max(260, Math.floor(boardH * 1.2));
-            const stageW = Math.max(boardW + sideAreaW * 2 + 180, 900);
-            const stageH = Math.max(boardH + 80, sideAreaH + 60);
+            const stageW = containerW;
             const boardLeft = Math.floor((stageW - boardW) / 2);
-            const boardTop = 30;
+            const boardTop = 20;
+            const trayTop = boardTop + boardH + 30;
+            const trayH = Math.max(230, Math.round(pieceH * 2.6));
+            const stageH = trayTop + trayH + 20;
 
             stageEl.style.width = stageW + 'px';
             stageEl.style.height = stageH + 'px';
@@ -1278,11 +1279,8 @@
                     piece.dataset.targetCol = col;
                     piece.dataset.placed = 'false';
 
-                    const isLeftSide = (row + col) % 2 === 0;
-                    const homeLeft = isLeftSide
-                        ? Math.max(18, Math.min(sideAreaW - pieceW - 18, 18 + Math.random() * Math.max(10, sideAreaW - pieceW - 36)))
-                        : Math.max(stageW - sideAreaW - pieceW - 18, Math.min(stageW - pieceW - 18, stageW - sideAreaW - pieceW - 18 + Math.random() * Math.max(10, sideAreaW - pieceW - 36)));
-                    const homeTop = 20 + Math.random() * Math.max(10, stageH - pieceH - 40);
+                    const homeLeft = Math.max(10, Math.min(stageW - pieceW - 10, 10 + Math.random() * Math.max(10, stageW - pieceW - 20)));
+                    const homeTop = trayTop + Math.random() * Math.max(10, trayH - pieceH);
 
                     piece.style.margin = '0';
                     piece.style.backgroundClip = 'padding-box';
